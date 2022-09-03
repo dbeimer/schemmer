@@ -3,10 +3,15 @@ import './style.css'
 
 import AdjustButton from './AdjustButton'
 import DarkThemeButton from './DarkThemeButton'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import * as Papa from 'papaparse'
+import generateSchema from './generator'
 
 function App() {
   let [darkTheme, setDarkTheme] = useState(false)
+  let [content, setContent] = useState('')
+
+  const inputRef = React.useRef(null)
 
 
   function changeTheme() {
@@ -23,10 +28,19 @@ function App() {
 
   useEffect(changeTheme, [])
 
-  let content = `
-rut_empleador varchar(20) null,
-dv varchar(50) null,
-  `
+  function handleChange(e) {
+    let file = e.target.files[0]
+    Papa.parse(file, {
+      header: true,
+      complete: function({ data }) {
+        generateSchema(data).then((text) => {
+          console.log(text)
+          setContent(text)
+        })
+      }
+    })
+  }
+
   return (
     <div className="App">
       <header>
@@ -39,10 +53,18 @@ dv varchar(50) null,
       <div className='container'>
         <pre>
           <code>
-            {content.trim()}
+            {content}
           </code>
         </pre>
       </div>
+      <form className='container' onSubmit={(e) => {
+        e.preventDefault()
+      }}>
+        <input type="file" className='button' onChange={handleChange} ref={inputRef} multiple={false} />
+        <button className='primary-button' onClick={() => {
+          inputRef.current.click()
+        }}> upload file</button>
+      </form>
     </div >
   );
 }
