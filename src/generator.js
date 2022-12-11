@@ -142,31 +142,31 @@ async function generateSchema(data) {
     schema = schema.concat(defColumns)
   }
 
-  let schemaString = ''
-  schemaString += "____postgres____\n"
+  let schemaStrings ={
+    'ddl':'',
+    'bq-schema':'',
+    'js-object':''
+  }
   for (const [index, column] of schema.entries()) {
     let end = index === schema.length - 1 ? '\n' : ',\n'
     let longitude = column.type === 'string' ? `(${column.length})` : ''
-    schemaString += `${column.column} ${equivalences.postgresql[column.type]}${longitude} NULL${end}`
+    schemaStrings.ddl += `${column.column} ${equivalences.postgresql[column.type]}${longitude} NULL${end}`
   }
 
-  schemaString += "____bq_schema____\n"
   for (const [index, column] of schema.entries()) {
     let end = index === schema.length - 1 ? '\n' : ',\n'
     // let longitude = column.type === 'string' ? `(${column.length})` : ''
-    schemaString += `{name: "${column.column}", type: "${equivalences.bq_schema[column.type]}", mode: "NULLABLE"}${end}`
+    schemaStrings['bq-schema'] += `{name: "${column.column}", type: "${equivalences.bq_schema[column.type]}", mode: "NULLABLE"}${end}`
   }
 
-  schemaString += "____js_row____\n"
   for (const [index, column] of schema.entries()) {
     let end = index === schema.length - 1 ? '\n' : ',\n'
-    schemaString += `${column.column}: row.${column.column}${end}`
+    schemaStrings['js-object'] += `${column.column}: row.${column.column}${end}`
   }
 
-  schemaString += "____columns____\n"
-  schemaString += schema.map(column => column.column).join(',\n')
+  schemaStrings.columns += schema.map(column => column.column).join(',\n')
 
-  return schemaString
+  return schemaStrings
 }
 
 export default generateSchema

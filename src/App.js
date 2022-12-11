@@ -9,7 +9,13 @@ import generateSchema from './generator'
 
 function App() {
   let [darkTheme, setDarkTheme] = useState(false)
+  let [option,setOption]=useState('ddl')
   let [content, setContent] = useState('')
+  let schemmeOptions=new Map()
+  schemmeOptions.set('ddl','DDL')
+  schemmeOptions.set('js-object','JS Object')
+  schemmeOptions.set('bq-schema','BigQuery schema')
+  schemmeOptions.set('columns','Columns')
 
   const inputRef = React.useRef(null)
 
@@ -33,12 +39,15 @@ function App() {
     Papa.parse(file, {
       header: true,
       complete: function({ data }) {
-        generateSchema(data).then((text) => {
-          console.log(text)
-          setContent(text)
+        generateSchema(data).then((schemaStrings) => {
+          setContent(schemaStrings)
         })
       }
     })
+  }
+
+  function handleOptionChange(e){
+    setOption(e.target.value)
   }
 
   return (
@@ -50,21 +59,26 @@ function App() {
           <DarkThemeButton dark={darkTheme} changeTheme={changeTheme} />
         </div>
       </header >
-      <div className='container'>
-        <pre>
-          <code>
-            {content}
-          </code>
-        </pre>
-      </div>
       <form className='container' onSubmit={(e) => {
         e.preventDefault()
       }}>
-        <input type="file" className='button' onChange={handleChange} ref={inputRef} multiple={false} />
+        <input type="file" className='button hidden' onChange={handleChange} ref={inputRef} multiple={false} />
+        <select onChange={handleOptionChange} value={option}>
+          {Array.from(schemmeOptions.entries()).map(([key,value])=>(
+            <option value={key}>{value}</option>
+          ))}
+        </select>
         <button className='primary-button' onClick={() => {
           inputRef.current.click()
         }}> upload file</button>
       </form>
+      <div className='container'>
+        <pre>
+          <code>
+            {content[option]??''}
+          </code>
+        </pre>
+      </div>
     </div >
   );
 }
