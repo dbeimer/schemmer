@@ -59,7 +59,7 @@ function App() {
           <DarkThemeButton dark={darkTheme} changeTheme={changeTheme} />
         </div>
       </header >
-      <form className='container' onSubmit={(e) => {
+      <form className='container controls-container' onSubmit={(e) => {
         e.preventDefault()
       }}>
         <input type="file" className='button hidden' onChange={handleChange} ref={inputRef} multiple={false} />

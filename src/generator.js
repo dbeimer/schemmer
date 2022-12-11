@@ -145,7 +145,8 @@ async function generateSchema(data) {
   let schemaStrings ={
     'ddl':'',
     'bq-schema':'',
-    'js-object':''
+    'js-object':'',
+    'columns':''
   }
   for (const [index, column] of schema.entries()) {
     let end = index === schema.length - 1 ? '\n' : ',\n'
