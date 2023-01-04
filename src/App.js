@@ -6,6 +6,7 @@ import DarkThemeButton from './DarkThemeButton'
 import React, { useEffect, useState } from 'react'
 import * as Papa from 'papaparse'
 import generateSchema from './generator'
+import * as xlsx from 'xlsx'
 
 function App() {
   let [darkTheme, setDarkTheme] = useState(false)
@@ -36,14 +37,28 @@ function App() {
 
   function handleChange(e) {
     let file = e.target.files[0]
-    Papa.parse(file, {
-      header: true,
-      complete: function({ data }) {
-        generateSchema(data).then((schemaStrings) => {
-          setContent(schemaStrings)
-        })
-      }
+    // console.log(file.name)
+    let reader=new FileReader()
+    reader.addEventListener('load',event=>{
+      let workbook=xlsx.read(event.target.result)
+      // console.log(workbook.SheetNames)
+      let csvString=xlsx.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]])
+      Papa.parse(csvString, {
+        header: true,
+        transformHeader:(header)=>{
+          let newHeader=header.toLowerCase()
+          newHeader=newHeader.replace(/ +/g,'_')
+          return newHeader
+        },
+        complete: function({ data }) {
+          generateSchema(data).then((schemaStrings) => {
+            setContent(schemaStrings)
+          })
+        }
+      })
     })
+
+    reader.readAsArrayBuffer(file) // this function activate the file reader
   }
 
   function handleOptionChange(e){
